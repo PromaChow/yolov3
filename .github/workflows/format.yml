@@ -1,29 +1,39 @@
-# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
-
-# Ultralytics Actions https://github.com/ultralytics/actions
-# This workflow automatically formats code and documentation in PRs to official Ultralytics standards
-
 name: Ultralytics Actions
-
 on:
-  issues:
-    types: [opened]
-  pull_request:
-    branches: [main, master]
-    types: [opened, closed, synchronize, review_requested]
+  push:
+    branches:
+      - main
 
 jobs:
   format:
     runs-on: ubuntu-latest
     steps:
+      - name: Start Energy Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: start-measurement
       - name: Run Ultralytics Formatting
         uses: ultralytics/actions@main
         with:
-          token: ${{ secrets._GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          labels: true # autolabel issues and PRs
-          python: true # format Python code and docstrings
-          prettier: true # format YAML, JSON, Markdown and CSS
-          spelling: true # check spelling
-          links: false # check broken links
-          summary: true # print PR summary with GPT4o (requires 'openai_api_key')
+          labels: true
+          links: false
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          prettier: true
+          python: true
+          spelling: true
+          summary: true
+          token: ${{ secrets._GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+      - id: display-measurement
+        name: Display Energy Results
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: display-results
+      - name: Save Total Energy Consumption Data
+        run: echo '${ steps.final-measurement.outputs.data-total-json }' > total_energy_consumption-1740376413.json
+      - name: Upload Energy Consumption Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-energy-consumption
+          path: total_energy_consumption-1740376413.json
